@@ -1,0 +1,31 @@
+# Python specifics
+*.pyc
+*.pyo
+*.egg-info/
+*.cache
+__pycache__/
+
+# Virtual environments
+venv/
+*.venv
+venv.bak/
+*.venv.bak
+
+# Maya specifics
+*.mb
+*.ma
+*.bak
+*.swatches
+mayaRenderLog.txt
+*.mll
+*.xgen
+
+# Personal Maya prefs
+maya/projects/default/
+
+# OS generated
+.DS_Store*
+ehthumbs.db
+Icon
+Thumbs.db
+desktop.ini
