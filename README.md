@@ -9,20 +9,26 @@ documentation and evidence of Agile methodologies and usage of Git.
 Part 1
 Each member of the group will present at least one section of the presentation which will contain
 the following:
+
 ● Production schedule and plan (group assessed) which contains:
    ○ A schedule for the work, with milestones, and the student who is assigned to work
    on each tool.
    ○ Planned folder structure with Work in Progress (WIP) and Publish areas.
    ○ Data types to be passed between departments.
+   
 ● Pseudocode for each tool to be developed (individually assessed)
+
 ● A Git repository, which academic staff will need to been given access to
 
 Part 2
 Each individual will present the tool they have developed to show that it works in conjunction with the
 other tools developed by their group.
 Groups will also present the following:
+
 ● Functional computer code that works with both Unix and Windows file paths
+
 ● User documentation for each tool
+
 ● Usage of a Git repository showing the frequency and quality of commits for each individual
 student in the group
 
