@@ -32,20 +32,32 @@ Groups will also present the following:
 ● Usage of a Git repository showing the frequency and quality of commits for each individual
 student in the group
 
-Repository Structure:
+Repository Folder Structure:
 
-  src/: Source code for all tools.
+        src/: Source code for all tools.
   
-                  asset_publisher/: Code for the asset publishing system.
+               asset_publisher/: Code for the asset publishing system.
     
-                  integrity_checker/: Code for the asset integrity check tool.
+               integrity_checker/: Code for the asset integrity check tool.
     
-                  lighting_scene_builder/: Code for the tool that builds a lighting scene.
+               lighting_scene_builder/: Code for the tool that builds a lighting scene.
     
-  docs/: Documentation for each tool.
+        docs/: Documentation for each tool.
   
-  tests/: Temp folder to test unfinished or rough scripts and assets to verify the functionality of tools.
+        tests/: Temp folder to test unfinished or rough scripts and assets to verify the functionality of tools.
   
-  assets/: Sample 3D assets for demo purposes.
+        assets/: Sample 3D assets for demo purposes.
   
-  .gitignore: A file specifying patterns of files/folders that Git should ignore. (e.g., *.pyc, *.log, etc.)
+        .gitignore: A file specifying patterns of files/folders that Git should ignore. (e.g., *.pyc, *.log, etc.)
+
+File Naming Convention
+
+Asset Publishing System :    ap_
+Integrity Checker :          ic_
+Lighting Scene Buidler :     ls_
+
+e.g      Lighting scene pseudocode = ls_pseudocode
+         Asset publisher test code = ap_test
+
+
+
