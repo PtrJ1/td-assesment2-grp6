@@ -36,15 +36,15 @@ Repository Structure:
 
   src/: Source code for all tools.
   
-   asset_publisher/: Code for the asset publishing system.
+                  asset_publisher/: Code for the asset publishing system.
     
-   integrity_checker/: Code for the asset integrity check tool.
+                  integrity_checker/: Code for the asset integrity check tool.
     
-   lighting_scene_builder/: Code for the tool that builds a lighting scene.
+                  lighting_scene_builder/: Code for the tool that builds a lighting scene.
     
   docs/: Documentation for each tool.
   
-  tests/: Test unfinished or rough scripts and assets to verify the functionality of tools.
+  tests/: Temp folder to test unfinished or rough scripts and assets to verify the functionality of tools.
   
   assets/: Sample 3D assets for demo purposes.
   
