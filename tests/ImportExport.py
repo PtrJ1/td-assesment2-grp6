@@ -15,15 +15,7 @@ export_path = "C:/Users/13630811/Documents/maya/projects/default/assets"
 export_alembic(export_path)
 
 
-    
-#Animation artist import
 
-def import_alembic(input_path):
-    alembic_files = [f for f in os.listdir(input_path)if f.endswith('abc')]
-    if not alembic_files:
-        cmds.warning("brr")
-
-    print("testing, testing")
         
     
 
