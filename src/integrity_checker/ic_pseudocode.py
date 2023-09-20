@@ -1,6 +1,7 @@
-FUNCTION main()
+FUNCTION main():
   #GUI
   create GUI window with buttons and logs
+
   if user clicks on "Run Integrity Check" button:
     call runIntegrityCheck()
 
