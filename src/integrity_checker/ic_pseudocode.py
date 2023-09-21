@@ -71,12 +71,12 @@ FUNCTION checkFocalLengthAndFStop():
         
 FUNCTION checkTransformAndPivotAtOrigin():
     # Code to ensure the set's transform and pivot is at the origin
-    for each set or setpiece in the scene:
+    for each set or setPiece in the scene:
       if transform or pivot is not at the origin:
-        log "Transform/Pivot error at: " + set/setpiece name
+        log "Transform/Pivot error at: " + set/setPiece name
 
 FUNCTION checkMostRecentVersionOfSetPieces():
     # Code to verify if the most recent version of each set piece model is referenced
-    for each setpiece referenced in the scene:
-      if version of setpiece is not the latest:
-        log "Outdated setpiece: " + setpiece name
+    for each setPiece referenced in the scene:
+      if version of setPiece is not the latest:
+        log "Outdated setPiece: " + setPiece name
