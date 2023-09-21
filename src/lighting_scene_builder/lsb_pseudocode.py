@@ -15,13 +15,16 @@ def buttonMethod(args):
     cmds.PolyCube()
 
 def showUI():
-    myWindow = cmds.window(title="Lighting Manager", widthHeight = (500, 500)
-    cmds.columnLayout()
+    window = cmds.window(title="Lighting Manager", widthHeight = (500, 500)
+    cmds.columnLayout(adjustableColumn=True)
     
+    cmds.rowlayout(adjustableColumn3, numberOfColumns=4)
     cmds.button(label="Create"' command = buttonMethod)
     cmds.button(label="Save", command = buttonMethod)
     cmds.button(label="Import", command = buttonMethod)
     cmds.button(label="Refresh", command = buttonMethod)
+    
+cmds.showWindow(window)
 
 modelEditor(getPanel(withFocus = True), edit = True, displayLights = 'all')
 
@@ -36,3 +39,4 @@ setAttr('Light1.color', 0, 0.5, 0.5, type = 'double3')
 setAttr('Light1.rotateX', -90)
 setAttr('Light1.rotateY', -90)
 setAttr('Light1.rotateZ', -90)
+                
