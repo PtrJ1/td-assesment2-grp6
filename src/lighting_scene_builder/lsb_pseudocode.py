@@ -10,10 +10,10 @@ def setImport():
     setImport()
 
 def buttonMethod(args):
-    mc.PolyCube()
+    cmds.PolyCube()
 
 def showUI():
-    myWIndow = cmds.window(title="Lighting Manager", widthHeight = (500, 500)
+    myWindow = cmds.window(title="Lighting Manager", widthHeight = (500, 500)
     cmds.columnLayout()
     
     cmds.button(label="Save", command = buttonMethod)
