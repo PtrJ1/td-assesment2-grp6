@@ -1,10 +1,10 @@
-#This program will allow the user to import a model into Maya and add lighting options to the model
+#This program will allow the user to import assets into Maya and add lighting options to the model
 #in order to create a render scene.
 
 import maya.cmds as mc #Import Maya Commands
 
 def setImport(): #Create import function
-    setImportPath = 'X:\Path_To_File.fbx' #Import model from = 'This Location'
+    setImportPath = 'X:/Path_To_File.fbx' #Import model from = 'This Location'
     cmds.file(setImportPath, i=True, mergeNamespacesOnClash=True, namespace=':');
 
 setImport()
