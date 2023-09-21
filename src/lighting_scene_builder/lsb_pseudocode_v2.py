@@ -14,22 +14,25 @@ Create Buttons
 
 Create UI
 	Create window = window size
-	Column layout
+	Create Column layout
 
+	Create Row Layout
 	Create Button 'Create'
 	Create Button 'Save'
 	Create Button 'Import'
 	Create Button 'Refresh'
 
-Enable light functions
+Show window
 
-Enable shadows
+Create light functions
 
-Set up directional light
-Set up intensity of light
-Set up intensity adjustment
-Set up shadow depth
-Add colour to lighting
+Create shadows
+
+Create directional light
+Create intensity of light
+Create intensity adjustment
+Create shadow depth
+Create colour to lighting
 
 Rotate light at X-axis
 Rotate light at Y-axis
