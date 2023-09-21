@@ -1,13 +1,24 @@
-#This program will allow the user to import assets into Maya and add lighting options to the model
+#This program will allow the user to import an asset into Maya and add lighting options to the model
 #in order to create a render scene.
 
 import maya.cmds as cmds
 
-def setImport(): #Create import function
-    setImportPath = 'X:/Path_To_File.fbx' #Import model from = 'This Location'
+def setImport():
+    setImportPath = 'X:\Path_To_File.fbx'
     cmds.file(setImportPath, i=True, mergeNamespacesOnClash=True, namespace=':');
+    
+    setImport()
 
-setImport()
+def buttonMethod(args):
+    mc.PolyCube()
+
+def showUI():
+    myWIndow = cmds.window(title="Lighting Manager", widthHeight = (500, 500)
+    cmds.columnLayout()
+    
+    cmds.button(label="Save", command = buttonMethod)
+    cmds.button(label="Import", command = buttonMethod)
+    cmds.button(label="Refresh", command = buttonMethod)
 
 modelEditor(getPanel(withFocus = True), edit = True, displayLights = 'all')
 
