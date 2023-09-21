@@ -3,6 +3,8 @@
 
 import maya.cmds as cmds
 
+create GUI window with buttons and logs
+
 def setImport():
     setImportPath = 'X:\Path_To_File.fbx'
     cmds.file(setImportPath, i=True, mergeNamespacesOnClash=True, namespace=':');
@@ -16,6 +18,7 @@ def showUI():
     myWindow = cmds.window(title="Lighting Manager", widthHeight = (500, 500)
     cmds.columnLayout()
     
+    cmds.button(label="Create"' command = buttonMethod)
     cmds.button(label="Save", command = buttonMethod)
     cmds.button(label="Import", command = buttonMethod)
     cmds.button(label="Refresh", command = buttonMethod)
