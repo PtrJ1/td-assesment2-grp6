@@ -1,0 +1,42 @@
+import maya.cmds as cmds
+
+path="C://"
+
+cmds.file(path + "new-lighting", force=True, typ="mayaBinary", exportSelected=True)
+
+cmds.file("assets/Lighting/new-lighting.ma", i=True)
+
+class Window(object):
+        
+    #constructor
+    def __init__(self):
+            
+        self.window = "Window"
+        self.title = "Lighting Manager"
+        self.size = (400, 400)
+            
+        # close old window is open
+        if cmds.window(self.window, exists = True):
+            cmds.deleteUI(self.window, window=True)
+            
+        #create new window
+        self.window = cmds.window(self.window, title=self.title, widthHeight=self.size)
+        
+        cmds.columnLayout(adjustableColumn = True)
+        
+        cmds.text(self.title)
+        cmds.separator(height=20)
+        
+        self.Name = cmds.textFieldGrp(label='Lighting Type:')
+        self.Size = cmds.floatFieldGrp(numberOfFields=3, label='Direction:',
+                        value1=1, value2=1, value3=1)
+                        
+        self.Subdivs = cmds.intSliderGrp(field=True, label='Lighting Intensity',
+                        minValue=1, maxValue=10, value=1)
+
+        self.CreateBtn = cmds.button(label='Confirm Lighting Options')
+        
+        #display new window
+        cmds.showWindow()
+                                   
+myWindow = Window()
