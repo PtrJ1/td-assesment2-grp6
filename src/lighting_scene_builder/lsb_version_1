@@ -34,7 +34,13 @@ class Window(object):
         self.Subdivs = cmds.intSliderGrp(field=True, label='Lighting Intensity',
                         minValue=1, maxValue=10, value=1)
 
-        self.CreateBtn = cmds.button(label='Confirm Lighting Options')
+        self.CreateBtn = cmds.button(label='Save')
+        
+        self.CreateBtn = cmds.button(label='Import')
+        
+        self.CreateBtn = cmds.button(label='Export')
+        
+        self.CreateBtn = cmds.button(label='Refresh')
         
         #display new window
         cmds.showWindow()
