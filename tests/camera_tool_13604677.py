@@ -141,7 +141,8 @@ def cameraTools():
     cmds.columnLayout()
     
     cmds.separator(h=10)
-    cmds.text('PREVIS: Creates an AlexaLF camera')
+    cmds.text('Create an AlexaLF camera')
+    cmds.separator(h=10)
     cmds.text('Sets the correct render settings')
     cmds.separator(h=10)
     
@@ -149,7 +150,7 @@ def cameraTools():
 
 
     cmds.separator(h=30)
-    cmds.text('LAYOUT: Sets AlexaLF Settings')
+    cmds.text('Sets AlexaLF Settings')
     cmds.separator(h=10)
     
     cmds.button(label = 'AlexaLF Settings', command = 'alexaCamera()')
@@ -159,38 +160,23 @@ def cameraTools():
     cmds.text('Sets focal length on selected cameras')
     cmds.separator(h=10)
     
+    cmds.gridLayout(numberOfColumns=4, cellWidthHeight=(150, 30))
     cmds.button(label = '12mm', command = 'focalLength12()')
-    cmds.separator(h=10)
     cmds.button(label = '14mm', command = 'focalLength14()')
-    cmds.separator(h=10)
     cmds.button(label = '16mm', command = 'focalLength16()')
-    cmds.separator(h=10)
     cmds.button(label = '18mm', command = 'focalLength18()')
-    cmds.separator(h=10)
     cmds.button(label = '21mm', command = 'focalLength21()')
-    cmds.separator(h=10)
     cmds.button(label = '25mm', command = 'focalLength25()')
-    cmds.separator(h=10)
     cmds.button(label = '27mm', command = 'focalLength27()')
-    cmds.separator(h=10)
     cmds.button(label = '32mm', command = 'focalLength32()')
-    cmds.separator(h=10)
     cmds.button(label = '35mm', command = 'focalLength35()')
-    cmds.separator(h=10)
     cmds.button(label = '40mm', command = 'focalLength40()')
-    cmds.separator(h=10)
     cmds.button(label = '50mm', command = 'focalLength50()')
-    cmds.separator(h=10)
     cmds.button(label = '65mm', command = 'focalLength65()')
-    cmds.separator(h=10)
     cmds.button(label = '75mm', command = 'focalLength75()')
-    cmds.separator(h=10)
     cmds.button(label = '100mm', command = 'focalLength100()')
-    cmds.separator(h=10)
     cmds.button(label = '135mm', command = 'focalLength135()')
-    cmds.separator(h=10)
     cmds.button(label = '150mm', command = 'focalLength150()')
-    cmds.separator(h=10)
     
     cmds.showWindow('cameraTools')
 
