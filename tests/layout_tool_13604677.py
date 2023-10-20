@@ -1,7 +1,10 @@
 import os
 from maya import cmds
 
-root_folder = "/tmp/week5"
+#root_folder = "/tmp/week5"
+path="C:/Users/13604677/Desktop/Layout"
+
+cmds.file(path, force=True, typ="mayaBinary", exportSelected=True)
 
 def Import():
     if os.path.isdir(root_folder):
@@ -27,6 +30,13 @@ def Import():
                         cmds.createNode('transform', name=asset_type)
                 
                     cmds.parent(ns + ":" + asset, asset_type)
+
+#def saveProp(prop):
+#    if not os.path.exists(path + prop):
+#        os.makedirs(path + prop)
+        
+#        command = "-frameRange 1 120 -step 1 -wcs -root" + prop + "-file" + path + prop "/" + prop + "_" + versionToString(getVersion(prop)+1) + ".abc"
+#        cmds.AbcExport(j = command) 
 
 def Export():
     asset_types_to_export = ["characters", "props"]
@@ -81,7 +91,7 @@ class Window(object):
     def __init__(self):
             
         self.window = "Window"
-        self.title = "Import/Export"
+        self.title = "Layout Tool"
         self.size = (200, 100)
             
         if cmds.window(self.window, exists = True):
@@ -90,9 +100,10 @@ class Window(object):
         self.window = cmds.window(self.window, title=self.title, widthHeight=self.size)
         
         cmds.columnLayout(adjustableColumn = True)
-
-        cmds.button(label='Import')
-        cmds.button(label='Export')
+        
+        cmds.button(label='Import Data')
+        cmds.separator(h=10)
+        cmds.button(label='Export Data')
         
         cmds.showWindow()
 
