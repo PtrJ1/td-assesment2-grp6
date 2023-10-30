@@ -1,14 +1,61 @@
 import pymel.core as pm
 import maya.cmds as cmds
 import maya.OpenMaya as om
+import re
 
 
 # GUI Initialization
 def main():
-    window = pm.window(title="Integrity Check Tool", widthHeight=(200, 150))
-    layout = pm.columnLayout(adjustableColumn=True)
-    pm.button(label='Run Integrity Check', command=runIntegrityCheck)
-    pm.textScrollList("logArea", numberOfRows=8, allowMultiSelection=True, append=["Integrity Log will appear here..."])
+    if pm.window("integrityCheckerWin", exists=True):
+        pm.deleteUI("integrityCheckerWin")
+    
+    window = pm.window("integrityCheckerWin", title="Integrity Checker", widthHeight=(600, 400))
+    
+    mainLayout = pm.rowLayout(numberOfColumns=2, adjustableColumn=2, columnAttach=(1, 'right', 5), columnWidth=[(1, 230), (2, 250)])
+    
+    # COLUMN 1: Checks
+    checksColumn = pm.columnLayout(parent=mainLayout, adjustableColumn=True, rowSpacing=5, columnOffset=('both', 10))
+    
+    # General Section
+    pm.text(label="General", height=25, font='boldLabelFont')
+    pm.checkBox("chk_unknownNodes", label="Unknown/Unused Nodes")
+    pm.checkBox("chk_assetNames", label="Asset Names")
+    pm.checkBox("chk_nodeHierarchy", label="Node Hierarchy")
+    pm.checkBox("chk_referenceErrors", label="Reference Errors")
+    pm.checkBox("chk_nanAttributes", label="NaN Attributes")
+    
+    
+    pm.separator(style='none', height=10)
+    
+    # Layout Section
+    pm.text(label="Layout", height=25, font='boldLabelFont')
+    pm.checkBox("chk_cameraAperture", label="Camera Aperture")
+    pm.checkBox("chk_focalLength", label="Focal Length/f-stop")
+    
+    
+    pm.separator(style='none', height=10)
+    
+    # setPieces Section
+    pm.text(label="setPieces", height=25, font='boldLabelFont')
+    pm.checkBox("chk_transformPivotSetPieces", label="Transform and Pivot")
+    
+    
+    pm.separator(style='none', height=10)
+    
+    # set Section
+    pm.text(label="sets", height=25, font='boldLabelFont')
+    pm.checkBox("chk_transformPivotSet", label="Transform and Pivot")
+    pm.checkBox("chk_referenceVersion", label="Reference Version")
+    
+    pm.separator(style='none', height=20)
+    pm.button(label="Run selected checks", command=runSelectedChecks)
+    
+    # COLUMN 2: Logs
+    logsColumn = pm.columnLayout(parent=mainLayout, adjustableColumn=True, rowSpacing=5, columnOffset=('both', 10))
+    pm.textScrollList("logArea", numberOfRows=20, allowMultiSelection=True, append=["Integrity Log will appear here..."], width=230, height=330)
+    pm.separator(style='none', height=10)
+    pm.button(label="Run all checks", command=runIntegrityCheck)
+    
     pm.showWindow(window)
 
 def runIntegrityCheck(*args):
@@ -37,6 +84,25 @@ def runIntegrityCheck(*args):
             log_message("Transform/Pivot error.")
         if context == "Sets" and not isLatestVersionOfSetPiece():
             log_message("Outdated setPiece.")
+            
+
+def runSelectedChecks(*args):
+    pm.textScrollList("logArea", edit=True, removeAll=True)
+    
+    if pm.checkBox("chk_unknownNodes", query=True, value=True) and not removeUnknownOrUnusedNodes():
+        log_message("Unknown or unused nodes found.")
+    if pm.checkBox("chk_assetNames", query=True, value=True) and not isAssetNamingConventionValid():
+        log_message("Asset naming convention error.")
+    if pm.checkBox("chk_nodeHierarchy", query=True, value=True) and not isNodeHierarchyValid():
+        log_message("Node hierarchy error.")
+    # ... rest of the checks
+
+    # Context detection not yet implemented 
+    context = "Layout"  # placeholder
+    if context == "Layout" and pm.checkBox("chk_cameraAperture", query=True, value=True) and not isCameraApertureValid():
+        log_message("Aperture error.")
+    # ... rest of checks
+
 
 def log_message(message):
     pm.textScrollList("logArea", edit=True, append=[message])
@@ -75,14 +141,15 @@ def removeUnknownOrUnusedNodes():
     return not FOUND
 
 def isAssetNamingConventionValid():
-    # Placeholder naming convention
-    def naming_convention(name):
-        return "asset_" in name
+    naming_convention_pattern = re.compile(r'^asset_[A-Za-z0-9]+(_v\d{3})?$')
     
+    all_valid = True
     for asset in pm.ls(dag=True):
-        if not naming_convention(asset.name()):
-            return False
-    return True
+        asset_name = asset.name()
+        if not naming_convention_pattern.match(asset_name):
+            log_message(f"Asset naming convention error for: {asset_name}")
+            all_valid = False
+    return all_valid
 
 def isNodeHierarchyValid():
     # Placeholder for hierarchy validation
