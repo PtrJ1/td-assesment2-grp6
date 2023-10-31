@@ -141,7 +141,7 @@ def removeUnknownOrUnusedNodes():
     return not FOUND
 
 def isAssetNamingConventionValid():
-    naming_convention_pattern = re.compile(r'^asset_[A-Za-z0-9]+(_v\d{3})?$')
+    naming_convention_pattern = re.compile(r'.*v\d{3}.*')
     
     all_valid = True
     for asset in pm.ls(dag=True):
@@ -151,25 +151,69 @@ def isAssetNamingConventionValid():
             all_valid = False
     return all_valid
 
+
 def isNodeHierarchyValid():
-    # Placeholder for hierarchy validation
-    for node in pm.ls(dag=True):
-        if "invalid_condition" in node.name():  # Replace later
+    # Check if geometries are correctly grouped
+    for geometry in pm.ls(dag=True, geometry=True):
+        parents = geometry.getAllParents()
+        if not parents or 'geometry_group' not in parents[0].name().lower():
+            log_message(f"Geometry not correctly grouped: {geometry}")
             return False
+
+    # Check if cameras or lights are not parented under geometries
+    for node in pm.ls(dag=True, type=['camera', 'light']):
+        parents = node.getAllParents()
+        if parents and 'geometry' in parents[0].nodeType(inherited=True):
+            log_message(f"Invalid parent for {node}: {parents[0]}")
+            return False
+
+    # Check for unexpected nodes at the root level
+    root_nodes = pm.ls(assemblies=True)
+    allowed_root_nodes = ['camera_group', 'lights_group']
+    for node in root_nodes:
+        if node.name().lower() not in allowed_root_nodes:
+            log_message(f"Unexpected root node: {node}")
+            return False
+
     return True
 
 def areReferencesValid():
-    # Placeholder for references validation
+    all_valid = True
+
     for ref in pm.listReferences():
+        # Check if reference is loaded
         if not ref.isLoaded():
-            return False
-    return True
+            log_message(f"Reference not loaded: {ref.refNode}")
+            all_valid = False
+
+        # Check if reference file still exists
+        file_path = ref.path
+        if not os.path.exists(file_path):
+            log_message(f"Reference file does not exist: {file_path}")
+            all_valid = False
+
+        # Check if referenced nodes have errors
+        ref_nodes = ref.nodes()
+        for node in ref_nodes:
+            if pm.hasAttr(node, "hasErrors"):
+                if pm.getAttr(f"{node}.hasErrors"):
+                    log_message(f"Referenced node has errors: {node}")
+                    all_valid = False
+
+    return all_valid
 
 def checkAttributesForNaN():
     for node in pm.ls(dag=True, type="transform"):
         for attr in ["tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"]:
             val = node.getAttr(attr)
-            if abs(val) < 0.0001:  # Placeholder for NaN check
+            
+            # Check for NaN or infinite values
+            if math.isnan(val) or math.isinf(val):
+                log_message(f"Invalid attribute value in {node}.{attr}: {val}")
+                node.setAttr(attr, 0)  # Resetting the attribute to zero
+            
+            # Round very small decimals
+            elif abs(val) < 0.0001:
                 node.setAttr(attr, round(val, 4))
 
 def isCameraApertureValid():
