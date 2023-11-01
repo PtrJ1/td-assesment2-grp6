@@ -2,6 +2,8 @@ import pymel.core as pm
 import maya.cmds as cmds
 import maya.OpenMaya as om
 import re
+import math
+import os
 
 
 # GUI Initialization
@@ -72,18 +74,14 @@ def runIntegrityCheck(*args):
     checkAttributesForNaN()
 
     # Context Specific Checks
-    # Placeholder for context detection
-    context = "Layout"  # placeholder
-    if context == "Layout":
-        if not isCameraApertureValid():
-            log_message("Aperture error.")
-        if not isFocalLengthAndFStopValid():
-            log_message("Invalid focal length or f-stop.")
-    elif context in ["SetPieces", "Sets"]:
-        if not isTransformAndPivotAtOrigin():
-            log_message("Transform/Pivot error.")
-        if context == "Sets" and not isLatestVersionOfSetPiece():
-            log_message("Outdated setPiece.")
+    if not isCameraApertureValid():
+        log_message("Aperture error.")
+    if not isFocalLengthAndFStopValid():
+        log_message("Invalid focal length or f-stop.")
+    if not isTransformAndPivotAtOrigin():
+        log_message("Transform/Pivot error.")
+    if not isLatestVersionOfSetPiece():
+        log_message("Outdated setPiece.")
             
 
 def runSelectedChecks(*args):
@@ -95,13 +93,23 @@ def runSelectedChecks(*args):
         log_message("Asset naming convention error.")
     if pm.checkBox("chk_nodeHierarchy", query=True, value=True) and not isNodeHierarchyValid():
         log_message("Node hierarchy error.")
-    # ... rest of the checks
-
-    # Context detection not yet implemented 
-    context = "Layout"  # placeholder
-    if context == "Layout" and pm.checkBox("chk_cameraAperture", query=True, value=True) and not isCameraApertureValid():
+    if pm.checkBox("chk_referenceErrors", query=True, value=True) and not areReferencesValid():
+        log_message("Reference error.")
+        
+    if pm.checkBox("chk_nanAttributes", query=True, value=True) and not checkAttributesForNaN():
+        log_message("Found NaN or infinite values in node attributes.") 
+        
+    if pm.checkBox("chk_cameraAperture", query=True, value=True) and not isCameraApertureValid():
         log_message("Aperture error.")
-    # ... rest of checks
+        
+    if pm.checkBox("chk_focalLength", query=True, value=True) and not isFocalLengthAndFStopValid():
+        log_message("Invalid focal length or f-stop.")
+        
+    if pm.checkBox("chk_transformPivotSetPieces", query=True, value=True) and not isTransformAndPivotAtOrigin():
+        log_message("Transform/Pivot error.")
+        
+    if pm.checkBox("chk_referenceVersion", query=True, value=True) and not isLatestVersionOfSetPiece():
+        log_message("Outdated setPiece.")
 
 
 def log_message(message):
@@ -203,46 +211,131 @@ def areReferencesValid():
     return all_valid
 
 def checkAttributesForNaN():
+    all_valid = True
+    
     for node in pm.ls(dag=True, type="transform"):
         for attr in ["tx", "ty", "tz", "rx", "ry", "rz", "sx", "sy", "sz"]:
-            val = node.getAttr(attr)
+            attr_obj = node.attr(attr)  # Get attribute object
             
-            # Check for NaN or infinite values
-            if math.isnan(val) or math.isinf(val):
-                log_message(f"Invalid attribute value in {node}.{attr}: {val}")
-                node.setAttr(attr, 0)  # Resetting the attribute to zero
-            
-            # Round very small decimals
-            elif abs(val) < 0.0001:
-                node.setAttr(attr, round(val, 4))
+            # Check if the attribute is not locked and not connected
+            if not attr_obj.isLocked() and not attr_obj.isConnected():
+                val = attr_obj.get()
+                
+                # Check for NaN or infinite values
+                if math.isnan(val) or math.isinf(val):
+                    log_message(f"Invalid attribute value in {node}.{attr}: {val}")
+                    attr_obj.set(0)  # Resetting the attribute to zero
+                    all_valid = False
+                
+                # Round very small decimals
+                elif abs(val) < 0.0001:
+                    attr_obj.set(round(val, 4))
+                    
+            elif math.isnan(val) or math.isinf(val):
+                # Log a message if the attribute is NaN or infinite, but don't try to modify it
+                log_message(f"Unable to modify locked or connected attribute with invalid value: {node}.{attr}")
+                
+    return all_valid
+
 
 def isCameraApertureValid():
-    for cam in pm.ls(type="camera"):
-        if cam.getAttr("aspectRatio") != 16/9.0:
-            return False
-    return True
-
-def isFocalLengthAndFStopValid():
-    valid_focal_lengths = ["12", "14", "16", "18", "21", "25", "27", "32", "35", "40", "50", "65", "75", "100", "135", "150"]
-    valid_f_stops = ["1.3", "2", "2.8", "4", "5.6", "8", "11", "16", "22"]
+    all_valid = True
     
     for cam in pm.ls(type="camera"):
-        if str(cam.getAttr("focalLength")) not in valid_focal_lengths or str(cam.getAttr("fStop")) not in valid_f_stops:
-            return False
-    return True
+        camera_transform = pm.listRelatives(cam, parent=True)[0]  # Get the transform node of the camera
+        camera_name = camera_transform.name()
+        
+        if camera_name.endswith('cam'):  # Check if the camera name ends with 'cam'
+            try:
+                film_width = cam.getAttr("filmApertureWidth")
+                film_height = cam.getAttr("filmApertureHeight")
+                
+                if film_height != 0:
+                    aspect_ratio = film_width / film_height
+                    
+                    if aspect_ratio != 16/9.0:
+                        log_message(f"Invalid aspect ratio for camera: {camera_name}")
+                        all_valid = False
+                        
+            except pm.MayaAttributeError:
+                log_message(f"Attribute error accessing film aperture attributes for camera: {camera_name}")
+                all_valid = False
+                    
+    return all_valid
+
+
+def isFocalLengthAndFStopValid():
+    all_valid = True
+    
+    valid_focal_lengths = [12, 14, 16, 18, 21, 25, 27, 32, 35, 40, 50, 65, 75, 100, 135, 150]
+    valid_f_stops = [1.3, 2, 2.8, 4, 5.6, 8, 11, 16, 22]
+    
+    for cam in pm.ls(type="camera"):
+        camera_transform = pm.listRelatives(cam, parent=True)[0]  # Get the transform node of the camera
+        camera_name = camera_transform.name()
+        
+        try:
+            focal_length = cam.getAttr("focalLength")
+            f_stop = cam.getAttr("fStop")
+            
+            if focal_length not in valid_focal_lengths:
+                log_message(f"Invalid focal length for camera {camera_name}: {focal_length}")
+                all_valid = False
+            
+            if f_stop not in valid_f_stops:
+                log_message(f"Invalid f-stop for camera {camera_name}: {f_stop}")
+                all_valid = False
+                
+        except pm.MayaAttributeError:
+            log_message(f"Attribute error accessing focal length or f-stop for camera: {camera_name}")
+            all_valid = False
+            
+    return all_valid
 
 def isTransformAndPivotAtOrigin():
+    all_valid = True
+    
     for node in pm.ls(dag=True, type="transform"):
-        pivot = pm.xform(node, query=True, worldSpace=True, pivot=True)
-        if node.getTranslation(space="world") != (0,0,0) or (pivot[0], pivot[1], pivot[2]) != (0,0,0):
-            return False
-    return True
+        if "mRef" in node.name():
+            # Get the world space coordinates of the rotate pivot
+            rotate_pivot = pm.xform(node, query=True, worldSpace=True, rotatePivot=True)
+            # Get the world space coordinates of the scale pivot
+            scale_pivot = pm.xform(node, query=True, worldSpace=True, scalePivot=True)
+            
+            translation = node.getTranslation(space="world")
+            
+            if translation != (0, 0, 0) or rotate_pivot[:3] != (0, 0, 0) or scale_pivot[:3] != (0, 0, 0):
+                log_message(f"Invalid transform or pivot for node: {node}")
+                all_valid = False
+                
+    return all_valid
 
 def isLatestVersionOfSetPiece():
-    # Placeholder for latest version check
+    all_valid = True
+    
     for ref in pm.listReferences():
-        if "old_version" in ref.path:  # Replace later
-            return False
-    return True
+        file_path = ref.path
+        dir_path = os.path.dirname(file_path)
+        file_name = os.path.basename(file_path)
+        
+        # Extract the version number from the file name
+        version_match = re.search(r'v(\d+)', file_name)
+        if version_match:
+            current_version = int(version_match.group(1))
+            
+            # Get all files in the dir
+            files_in_directory = os.listdir(dir_path)
+            
+            # Check if there's a higher version in the dir
+            for other_file in files_in_directory:
+                other_version_match = re.search(r'v(\d+)', other_file)
+                if other_version_match:
+                    other_version = int(other_version_match.group(1))
+                    if other_version > current_version:
+                        log_message(f"Outdated reference: {file_name}")
+                        all_valid = False
+                        break  # Break once an outdated reference is found
+    
+    return all_valid
 
 main()
