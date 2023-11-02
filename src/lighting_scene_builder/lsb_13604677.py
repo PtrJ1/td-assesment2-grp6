@@ -34,6 +34,14 @@ def create_scene_setup_ui():
     cmds.menuItem(label="Prop 2")
     
     cmds.separator(h=10)
+
+    # Create the third combo box
+    prop_combo = cmds.optionMenu(label="Camera:")
+    # Add items to the combo box as needed
+    cmds.menuItem(label="Camera 1")
+    cmds.menuItem(label="Camera 2")
+    
+    cmds.separator(h=10)
     
     # Create 'Import Character' button
     cmds.button(label="Import Character", command=lambda *args: import_selected("Character"))
