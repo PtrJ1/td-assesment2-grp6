@@ -1,7 +1,5 @@
 import maya.cmds as cmds
 
-file_path = "C:/Users/13604677/Desktop"
-
 def create_scene_setup_ui():
     if cmds.window("Setup Window", exists=True):
         cmds.deleteUI("Setup Window")
@@ -10,12 +8,12 @@ def create_scene_setup_ui():
     cmds.columnLayout(adjustableColumn=True)
 
     # Create a text field for file path
-    file_path_field = cmds.textFieldGrp(label="FBX File Path: ", columnWidth=[1, 100])
+    file_path_field = cmds.textFieldGrp(label="Asset File Path: ", columnWidth=[1, 100])
     
     cmds.separator(h=10)
     
     # Create a button to browse and insert the FBX file
-    cmds.button(label="Browse and Insert FBX", command=lambda *args: insert_fbx(file_path_field))
+    cmds.button(label="Browse and Insert Asset", command=lambda *args: insert_fbx(file_path_field))
     
     cmds.separator(h=10)
     
