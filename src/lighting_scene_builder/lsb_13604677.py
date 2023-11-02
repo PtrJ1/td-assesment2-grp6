@@ -1,20 +1,6 @@
 import maya.cmds as cmds
 
-file_path = "your_file_path_here"
-
-selected_objects = cmds.ls(selection=True)
-
-if selected_objects:
-    # Use the file command to import the file
-    cmds.file(file_path, i=True, type="your_file_type_here", ignoreVersion=True, ra=True)
-    imported_objects = cmds.ls(selection=True)
-
-Set the imported objects as children of the selected objects
-    for obj in imported_objects:
-        for parent_obj in selected_objects:
-            cmds.parent(obj, parent_obj)
-else:
-    print("Please select at least one object in Maya before running this script.")
+file_path = "C:/Users/13604677/Desktop"
 
 def create_scene_setup_ui():
     if cmds.window("Setup Window", exists=True):
