@@ -3,14 +3,17 @@ import os
 import sys
 from PySide2 import QtWidgets, QtGui
 import datetime
+
+# Set the UI object as a global variable
 publish_ui = None
 
 class AssetPublishUI(QtWidgets.QWidget):
     def __init__(self):
         super(AssetPublishUI, self).__init__()
-        self.setWindowTitle('Asset Publish')
+        self.setWindowTitle('Asset Publish Tool')
         self.setGeometry(100, 100, 400, 200)
 
+        # Widgets for UI elements
         self.location_label = QtWidgets.QLabel('Publish Location:')
         self.location_edit = QtWidgets.QLineEdit()
         self.location_edit.setPlaceholderText('Select publish location...')
@@ -24,6 +27,7 @@ class AssetPublishUI(QtWidgets.QWidget):
         self.publish_button = QtWidgets.QPushButton('Publish')
         self.publish_button.clicked.connect(self.publish_asset)
 
+        # Layout setup
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.location_label)
         layout.addWidget(self.location_edit)
@@ -36,12 +40,14 @@ class AssetPublishUI(QtWidgets.QWidget):
 
         self.selected_objects = []
 
+    # Browse for the publish location
     def browse_location(self):
         folder = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Publish Location')
         if folder:
             self.location_edit.setText(folder)
             self.update_preview_text()
 
+    # Update the preview text with generated file names
     def update_preview_text(self):
         location_text = self.location_edit.text()
         if not location_text:
@@ -53,16 +59,18 @@ class AssetPublishUI(QtWidgets.QWidget):
             self.preview_text.setText('')
             return
 
+        # Get the current date
         current_date = datetime.datetime.now().strftime('%Y%m%d')
 
         preview = "Preview:"
         for obj in selected_objects:
             obj_name = os.path.basename(obj)
-            file_path = os.path.join(location_text, f"{obj_name}_{current_date}_vX")
+            file_path = self.get_next_version(location_text, obj_name, current_date)
             preview += f"\n{file_path}"
 
         self.preview_text.setText(preview)
 
+    # Publish the selected assets
     def publish_asset(self):
         location_text = self.location_edit.text()
 
@@ -74,6 +82,8 @@ class AssetPublishUI(QtWidgets.QWidget):
         if not selected_objects:
             QtWidgets.QMessageBox.critical(self, 'Error', 'No objects selected for publishing.')
             return
+
+        # Get the current date
         current_date = datetime.datetime.now().strftime('%Y%m%d')
 
         for obj in selected_objects:
@@ -87,15 +97,18 @@ class AssetPublishUI(QtWidgets.QWidget):
             except Exception as e:
                 QtWidgets.QMessageBox.critical(self, 'Error', f'Failed to publish {obj}: {str(e)}')
 
+    # Get the next version with a leading zero (e.g., v001, v002, v003)
     def get_next_version(self, location_text, obj_name, current_date):
         version = 1
         while True:
-            file_name = f"{obj_name}_{current_date}_v{version}"
+            file_name = f"{obj_name}_{current_date}_v{version:03d}"
             file_path = os.path.join(location_text, file_name)
             if not os.path.exists(file_path):
                 return file_path
+
             version += 1
 
+# Show the Asset Publish UI
 def show_publish_ui():
     global publish_ui
     app = QtWidgets.QApplication.instance()
