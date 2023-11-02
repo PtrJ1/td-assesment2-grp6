@@ -1,5 +1,21 @@
 import maya.cmds as cmds
 
+file_path = "your_file_path_here"
+
+selected_objects = cmds.ls(selection=True)
+
+if selected_objects:
+    # Use the file command to import the file
+    cmds.file(file_path, i=True, type="your_file_type_here", ignoreVersion=True, ra=True)
+    imported_objects = cmds.ls(selection=True)
+
+Set the imported objects as children of the selected objects
+    for obj in imported_objects:
+        for parent_obj in selected_objects:
+            cmds.parent(obj, parent_obj)
+else:
+    print("Please select at least one object in Maya before running this script.")
+
 def create_scene_setup_ui():
     if cmds.window("Setup Window", exists=True):
         cmds.deleteUI("Setup Window")
@@ -79,6 +95,34 @@ def insert_fbx(file_path_field):
         cmds.parent(fbx_locator, imported_fbx_objects[0])
 
     cmds.warning("FBX file inserted successfully.")
+    
+def isLatestVersionOfSetPiece():
+    all_valid = True
+    
+    for ref in pm.listReferences():
+        file_path = ref.path
+        dir_path = os.path.dirname(file_path)
+        file_name = os.path.basename(file_path)
+        
+        # Extract the version number from the file name
+        version_match = re.search(r'v(\d+)', file_name)
+        if version_match:
+            current_version = int(version_match.group(1))
+            
+            # Get all files in the dir
+            files_in_directory = os.listdir(dir_path)
+            
+            # Check if there's a higher version in the dir
+            for other_file in files_in_directory:
+                other_version_match = re.search(r'v(\d+)', other_file)
+                if other_version_match:
+                    other_version = int(other_version_match.group(1))
+                    if other_version > current_version:
+                        log_message(f"Outdated reference: {file_name}")
+                        all_valid = False
+                        break  # Break once an outdated reference is found
+    
+    return all_valid
 
 def run_scene_setup_tool():
     create_scene_setup_ui()
