@@ -10,7 +10,7 @@ def create_scene_setup_ui():
 
     # Create a text field for file path
     # Insert the folder file path in "/insert/folder/path"
-    file_path_field = cmds.textFieldGrp(label="Asset File Path: ", columnWidth=[1, 100], text="/insert/folder/path")
+    file_path_field = cmds.textFieldGrp(label="File Path: ", columnWidth=[1, 100], text="/insert/folder/path")
     
     cmds.separator(h=10)
     
