@@ -4,9 +4,9 @@ import sys
 from PySide2 import QtWidgets, QtGui
 import datetime
 
-# Set the UI object as a global variable
+# 将UI对象设为全局变量
 publish_ui = None
-
+type = 'transform'
 class AssetPublishUI(QtWidgets.QWidget):
     def __init__(self):
         super(AssetPublishUI, self).__init__()
@@ -14,13 +14,13 @@ class AssetPublishUI(QtWidgets.QWidget):
         self.setGeometry(100, 100, 400, 200)
 
         # Widgets for UI elements
-        self.location_label = QtWidgets.QLabel('Publish Location:')
+        self.location_label = QtWidgets.QLabel('Project Location:')
         self.location_edit = QtWidgets.QLineEdit()
-        self.location_edit.setPlaceholderText('Select publish location...')
+        self.location_edit.setPlaceholderText('Select project location...')
         self.browse_button = QtWidgets.QPushButton('Browse')
         self.browse_button.clicked.connect(self.browse_location)
 
-        self.preview_label = QtWidgets.QLabel('Preview:')
+        self.preview_label = QtWidgets.QLabel('')
         self.preview_text = QtWidgets.QLabel()
         self.preview_text.setWordWrap(True)
 
@@ -44,7 +44,10 @@ class AssetPublishUI(QtWidgets.QWidget):
     def browse_location(self):
         folder = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Publish Location')
         if folder:
-            self.location_edit.setText(folder)
+            # Set the publish location to /publish/assets/props inside the selected folder
+            project_location = os.path.join(folder)
+            publish_location = os.path.join(folder, 'publish', 'assets', 'props')
+            self.location_edit.setText(project_location)
             self.update_preview_text()
 
     # Update the preview text with generated file names
@@ -65,7 +68,8 @@ class AssetPublishUI(QtWidgets.QWidget):
         preview = "Preview:"
         for obj in selected_objects:
             obj_name = os.path.basename(obj)
-            file_path = self.get_next_version(location_text, obj_name, current_date)
+            publish_location = os.path.join(location_text, 'publis', 'assets', 'props')
+            file_path = self.get_next_version(publish_location, obj_name, current_date)
             preview += f"\n{file_path}"
 
         self.preview_text.setText(preview)
@@ -89,18 +93,35 @@ class AssetPublishUI(QtWidgets.QWidget):
         for obj in selected_objects:
             obj_name = os.path.basename(obj)
             file_path = self.get_next_version(location_text, obj_name, current_date)
-
+            
             try:
-                cmds.file(rename=file_path)
-                cmds.file(save=True, type='mayaBinary')
-                QtWidgets.QMessageBox.information(self, 'Success', f'{obj} published to {file_path}')
+                # Determine the file type based on the object type
+                object_type = cmds.objectType(obj)
+                file_type = None
+                
+                # Check the object type and set the appropriate file type
+                if object_type == 'transform':
+                        file_type = 'mayaBinary'  # Model: setPiece or sets
+                elif object_type == 'cacheFile':
+                    if 'character' in obj_name or 'prop' in obj_name:
+                        file_type = 'cache'  # Animation: character/prop animation cache
+                
+                if file_type:
+                    # Export the object with the appropriate file type
+                    cmds.file(file_path, exportSelected=True, type=file_type, force=True)
+                    QtWidgets.QMessageBox.information(self, 'Success', f'{obj} published to {file_path}')
+                else:
+                    QtWidgets.QMessageBox.critical(self, 'Error', f'Unsupported object type for {obj}: {object_type}')
             except Exception as e:
                 QtWidgets.QMessageBox.critical(self, 'Error', f'Failed to publish {obj}: {str(e)}')
 
+
     # Get the next version with a leading zero (e.g., v001, v002, v003)
     def get_next_version(self, location_text, obj_name, current_date):
+        obj_name = obj_name.replace('|', '_')
         version = 1
         while True:
+            # Use string formatting to ensure the version number is always three digits (e.g., v001, v002, v003)
             file_name = f"{obj_name}_{current_date}_v{version:03d}"
             file_path = os.path.join(location_text, file_name)
             if not os.path.exists(file_path):
@@ -120,3 +141,4 @@ def show_publish_ui():
 
 if __name__ == '__main__':
     show_publish_ui()
+    
