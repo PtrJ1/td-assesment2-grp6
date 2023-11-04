@@ -1,4 +1,5 @@
 import maya.cmds as cmds
+import os
 
 def create_scene_setup_ui():
     if cmds.window("Setup Window", exists=True):
@@ -8,12 +9,13 @@ def create_scene_setup_ui():
     cmds.columnLayout(adjustableColumn=True)
 
     # Create a text field for file path
-    file_path_field = cmds.textFieldGrp(label="Asset File Path: ", columnWidth=[1, 100])
+    # Insert the folder file path in "/insert/folder/path"
+    file_path_field = cmds.textFieldGrp(label="Asset File Path: ", columnWidth=[1, 100], text="/insert/folder/path")
     
     cmds.separator(h=10)
     
-    # Create a button to browse and insert the FBX file
-    cmds.button(label="Browse and Insert Asset", command=lambda *args: insert_fbx(file_path_field))
+    # Create a button to import assets
+    cmds.button(label="Import Asset", command=lambda *args: import_assets(file_path_field))
     
     cmds.separator(h=10)
     
@@ -64,29 +66,28 @@ def create_scene_setup_ui():
     
     cmds.showWindow(scene_setup_win)
 
-def insert_fbx(file_path_field):
-    file_path = cmds.textFieldGrp(file_path_field, query=True, text=True)
-    
-    if not file_path:
-        cmds.warning("Please specify an FBX file path.")
+def import_assets(folder_path_field):
+    folder_path = cmds.textFieldGrp(folder_path_field, query=True, text=True)
+
+    if not folder_path:
+        cmds.warning("Please specify the folder path.")
         return
 
-    # Create a new locator to represent the FBX file
-    fbx_locator = cmds.createNode("locator", name="FBX_Locator")
-    
-    # Import the FBX file
+    # List files in the specified folder
+    file_list = os.listdir(folder_path)
+    if not file_list:
+        cmds.warning("No files found in the specified folder.")
+        return
+
     try:
-        cmds.file(file_path, i=True, type="FBX", rpr="FBX", options="v=0;", pr=True, loadReferenceDepth="all")
+        # Import all files from the folder
+        for file_name in file_list:
+            file_path = os.path.join(folder_path, file_name)
+            if os.path.isfile(file_path):
+                cmds.file(file_path, i=True)
+        cmds.warning("Assets imported successfully.")
     except Exception as e:
-        cmds.warning("Failed to insert FBX file: " + str(e))
-        return
-
-    # Parent the FBX locator to the imported FBX objects
-    imported_fbx_objects = cmds.ls(type="transform", long=True)
-    if imported_fbx_objects:
-        cmds.parent(fbx_locator, imported_fbx_objects[0])
-
-    cmds.warning("FBX file inserted successfully.")
+        cmds.warning("Failed to import assets: " + str(e))
     
 def isLatestVersionOfSetPiece():
     all_valid = True
