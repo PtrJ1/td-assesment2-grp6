@@ -9,13 +9,12 @@ def create_scene_setup_ui():
     cmds.columnLayout(adjustableColumn=True)
 
     # Create a text field for file path
-    # Insert the folder file path in "/insert/folder/path"
-    file_path_field = cmds.textFieldGrp(label="File Path: ", columnWidth=[1, 100], text="/insert/folder/path")
+    folder_path_field = cmds.textFieldGrp(label="Folder Path: ", columnWidth=[1, 100], text="/Users/Jack/Desktop/Asset/")
     
     cmds.separator(h=10)
     
     # Create a button to import assets
-    cmds.button(label="Import Asset", command=lambda *args: import_assets(file_path_field))
+    cmds.button(label="Import Asset", command=lambda *args: import_assets(folder_path_field))
     
     cmds.separator(h=10)
     
@@ -80,14 +79,15 @@ def import_assets(folder_path_field):
         return
 
     try:
-        # Import all files from the folder
+        # Import Maya Binary (.mb) files from the folder
         for file_name in file_list:
-            file_path = os.path.join(folder_path, file_name)
-            if os.path.isfile(file_path):
-                cmds.file(file_path, i=True)
-        cmds.warning("Assets imported successfully.")
+            if file_name.lower().endswith(".mb"):
+                file_path = os.path.join(folder_path, file_name)
+                if os.path.isfile(file_path):
+                    cmds.file(file_path, i=True)
+        cmds.warning("Maya Binary assets imported successfully.")
     except Exception as e:
-        cmds.warning("Failed to import assets: " + str(e))
+        cmds.warning("Failed to import Maya Binary assets: " + str(e))
     
 def isLatestVersionOfSetPiece():
     all_valid = True
