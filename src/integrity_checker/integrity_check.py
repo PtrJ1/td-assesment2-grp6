@@ -5,7 +5,7 @@ import re
 import math
 import os
 
-
+ui_elements = {}
 # GUI Initialization
 def main():
     if pm.window("integrityCheckerWin", exists=True):
@@ -20,34 +20,34 @@ def main():
     
     # General Section
     pm.text(label="General", height=25, font='boldLabelFont')
-    pm.checkBox("chk_unknownNodes", label="Unknown/Unused Nodes")
-    pm.checkBox("chk_assetNames", label="Asset Names")
-    pm.checkBox("chk_nodeHierarchy", label="Node Hierarchy")
-    pm.checkBox("chk_referenceErrors", label="Reference Errors")
-    pm.checkBox("chk_nanAttributes", label="NaN Attributes")
+    ui_elements['unknownNodes'] = pm.checkBox("chk_unknownNodes", label="Unknown/Unused Nodes")
+    ui_elements['assetNames'] = pm.checkBox("chk_assetNames", label="Asset Names")
+    ui_elements['nodeHierarchy'] = pm.checkBox("chk_nodeHierarchy", label="Node Hierarchy")
+    ui_elements['refernceErrors'] = pm.checkBox("chk_referenceErrors", label="Reference Errors")
+    ui_elements['nanAttributes'] = pm.checkBox("chk_nanAttributes", label="NaN Attributes")
     
     
     pm.separator(style='none', height=10)
     
     # Layout Section
     pm.text(label="Layout", height=25, font='boldLabelFont')
-    pm.checkBox("chk_cameraAperture", label="Camera Aperture")
-    pm.checkBox("chk_focalLength", label="Focal Length/f-stop")
+    ui_elements['cameraAperture'] = pm.checkBox("chk_cameraAperture", label="Camera Aperture")
+    ui_elements['focalLength'] = pm.checkBox("chk_focalLength", label="Focal Length/f-stop")
     
     
     pm.separator(style='none', height=10)
     
     # setPieces Section
     pm.text(label="setPieces", height=25, font='boldLabelFont')
-    pm.checkBox("chk_transformPivotSetPieces", label="Transform and Pivot")
+    ui_elements['transformPivotSP'] = pm.checkBox("chk_transformPivotSetPieces", label="Transform and Pivot")
     
     
     pm.separator(style='none', height=10)
     
     # set Section
     pm.text(label="sets", height=25, font='boldLabelFont')
-    pm.checkBox("chk_transformPivotSet", label="Transform and Pivot")
-    pm.checkBox("chk_referenceVersion", label="Reference Version")
+    ui_elements['tranformPivot'] = pm.checkBox("chk_transformPivotSet", label="Transform and Pivot")
+    ui_elements['referenceVer'] = pm.checkBox("chk_referenceVersion", label="Reference Version")
     
     pm.separator(style='none', height=20)
     pm.button(label="Run selected checks", command=runSelectedChecks)
@@ -60,56 +60,129 @@ def main():
     
     pm.showWindow(window)
 
+def set_label_color(check_name, success):
+    if success:
+        color = (0, 1, 0)  # Green
+    else:
+        color = (1, 0, 0)  # Red
+    
+    pm.checkBox(ui_elements[check_name], edit=True, bgc=color)
+
+
 def runIntegrityCheck(*args):
     pm.textScrollList("logArea", edit=True, removeAll=True)
-    # General Checks
-    if not removeUnknownOrUnusedNodes():
+    result_unknownNodes = removeUnknownOrUnusedNodes()
+    set_label_color('unknownNodes', result_unknownNodes)
+    if not result_unknownNodes:
         log_message("Unknown or unused nodes found.")
-    if not isAssetNamingConventionValid():
+        
+    
+    # Check for Asset Naming Convention
+    result_assetNames = isAssetNamingConventionValid()
+    set_label_color('assetNames', result_assetNames)
+    if not result_assetNames:
         log_message("Asset naming convention error.")
-    if not isNodeHierarchyValid():
+        
+    # Check for Node Hierarchy
+    result_nodeHierarchy = isNodeHierarchyValid()
+    set_label_color('nodeHierarchy', result_nodeHierarchy)
+    if not result_nodeHierarchy:
         log_message("Node hierarchy error.")
-    if not areReferencesValid():
+        
+    # Check for Reference Errors
+    result_referenceErrors = areReferencesValid()
+    set_label_color('refernceErrors', result_referenceErrors)
+    if not result_referenceErrors:
         log_message("Reference error.")
-    checkAttributesForNaN()
-
-    # Context Specific Checks
-    if not isCameraApertureValid():
+        
+    # Check for NaN Attributes
+    result_nanAttributes = checkAttributesForNaN()
+    set_label_color('nanAttributes', result_nanAttributes)
+    if not result_nanAttributes:
+        log_message("Found NaN or infinite values in node attributes.")
+        
+    # Check for Camera Aperture
+    result_cameraAperture = isCameraApertureValid()
+    set_label_color('cameraAperture', result_cameraAperture)
+    if not result_cameraAperture:
         log_message("Aperture error.")
-    if not isFocalLengthAndFStopValid():
+        
+    # Check for Focal Length/f-stop
+    result_focalLength = isFocalLengthAndFStopValid()
+    set_label_color('focalLength', result_focalLength)
+    if not result_focalLength:
         log_message("Invalid focal length or f-stop.")
-    if not isTransformAndPivotAtOrigin():
+        
+    # Check for Transform and Pivot in SetPieces
+    result_transformPivotSetPieces = isTransformAndPivotAtOrigin()
+    set_label_color('transformPivotSP', result_transformPivotSetPieces)
+    if not result_transformPivotSetPieces:
         log_message("Transform/Pivot error.")
-    if not isLatestVersionOfSetPiece():
+        
+    # Check for Latest Version of Set Piece
+    result_referenceVersion = isLatestVersionOfSetPiece()
+    set_label_color('referenceVer', result_referenceVersion)
+    if not result_referenceVersion:
         log_message("Outdated setPiece.")
+
             
 
 def runSelectedChecks(*args):
     pm.textScrollList("logArea", edit=True, removeAll=True)
     
-    if pm.checkBox("chk_unknownNodes", query=True, value=True) and not removeUnknownOrUnusedNodes():
-        log_message("Unknown or unused nodes found.")
-    if pm.checkBox("chk_assetNames", query=True, value=True) and not isAssetNamingConventionValid():
-        log_message("Asset naming convention error.")
-    if pm.checkBox("chk_nodeHierarchy", query=True, value=True) and not isNodeHierarchyValid():
-        log_message("Node hierarchy error.")
-    if pm.checkBox("chk_referenceErrors", query=True, value=True) and not areReferencesValid():
-        log_message("Reference error.")
+    if pm.checkBox("chk_unknownNodes", query=True, value=True):
+        result_unknownNodes = removeUnknownOrUnusedNodes()
+        set_label_color('unknownNodes', result_unknownNodes)
+        if not result_unknownNodes:
+            log_message("Unknown or unused nodes found.")
+    
+    if pm.checkBox("chk_assetNames", query=True, value=True):
+        result_assetNames = isAssetNamingConventionValid()
+        set_label_color('assetNames', result_assetNames)
+        if not result_assetNames:
+            log_message("Asset naming convention error.")
         
-    if pm.checkBox("chk_nanAttributes", query=True, value=True) and not checkAttributesForNaN():
-        log_message("Found NaN or infinite values in node attributes.") 
+    if pm.checkBox("chk_nodeHierarchy", query=True, value=True):
+        result_nodeHierarchy = isNodeHierarchyValid()
+        set_label_color('nodeHierarchy', result_nodeHierarchy)
+        if not result_nodeHierarchy:
+            log_message("Node hierarchy error.")
         
-    if pm.checkBox("chk_cameraAperture", query=True, value=True) and not isCameraApertureValid():
-        log_message("Aperture error.")
+    if pm.checkBox("chk_referenceErrors", query=True, value=True):
+        result_referenceErrors = areReferencesValid()
+        set_label_color('refernceErrors', result_referenceErrors)
+        if not result_referenceErrors:
+            log_message("Reference error.")
         
-    if pm.checkBox("chk_focalLength", query=True, value=True) and not isFocalLengthAndFStopValid():
-        log_message("Invalid focal length or f-stop.")
+    if pm.checkBox("chk_nanAttributes", query=True, value=True):
+        result_nanAttributes = checkAttributesForNaN()
+        set_label_color('nanAttributes', result_nanAttributes)
+        if not result_nanAttributes:
+            log_message("Found NaN or infinite values in node attributes.")
         
-    if pm.checkBox("chk_transformPivotSetPieces", query=True, value=True) and not isTransformAndPivotAtOrigin():
-        log_message("Transform/Pivot error.")
+    if pm.checkBox("chk_cameraAperture", query=True, value=True):
+        result_cameraAperture = isCameraApertureValid()
+        set_label_color('cameraAperture', result_cameraAperture)
+        if not result_cameraAperture:
+            log_message("Aperture error.")
         
-    if pm.checkBox("chk_referenceVersion", query=True, value=True) and not isLatestVersionOfSetPiece():
-        log_message("Outdated setPiece.")
+    if pm.checkBox("chk_focalLength", query=True, value=True):
+        result_focalLength = isFocalLengthAndFStopValid()
+        set_label_color('focalLength', result_focalLength)
+        if not result_focalLength:
+            log_message("Invalid focal length or f-stop.")
+        
+    if pm.checkBox("chk_transformPivotSetPieces", query=True, value=True):
+        result_transformPivotSetPieces = isTransformAndPivotAtOrigin()
+        set_label_color('transformPivotSP', result_transformPivotSetPieces)
+        if not result_transformPivotSetPieces:
+            log_message("Transform/Pivot error.")
+        
+    if pm.checkBox("chk_referenceVersion", query=True, value=True):
+        result_referenceVersion = isLatestVersionOfSetPiece()
+        set_label_color('referenceVer', result_referenceVersion)
+        if not result_referenceVersion:
+            log_message("Outdated setPiece.")
 
 
 def log_message(message):
@@ -152,8 +225,14 @@ def isAssetNamingConventionValid():
     naming_convention_pattern = re.compile(r'.*v\d{3}.*')
     
     all_valid = True
+    excluded_assets = {'persp', 'perspShape', 'top', 'topShape', 'front', 'frontShape', 'side', 'sideShape'}
+
     for asset in pm.ls(dag=True):
         asset_name = asset.name()
+        
+        if asset_name in excluded_assets:
+            continue
+
         if not naming_convention_pattern.match(asset_name):
             log_message(f"Asset naming convention error for: {asset_name}")
             all_valid = False
@@ -240,27 +319,41 @@ def checkAttributesForNaN():
 
 def isCameraApertureValid():
     all_valid = True
-    
-    for cam in pm.ls(type="camera"):
-        camera_transform = pm.listRelatives(cam, parent=True)[0]  # Get the transform node of the camera
-        camera_name = camera_transform.name()
+    acceptable_aspect_ratios = [16/9.0, 4/3.0]
+
+    for cam_transform in pm.ls(type="transform"):
+        # Find all camera shapes under each transform
+        cam_shapes = pm.listRelatives(cam_transform, children=True, shapes=True, type='camera')
         
-        if camera_name.endswith('cam'):  # Check if the camera name ends with 'cam'
-            try:
-                film_width = cam.getAttr("filmApertureWidth")
-                film_height = cam.getAttr("filmApertureHeight")
-                
-                if film_height != 0:
-                    aspect_ratio = film_width / film_height
-                    
-                    if aspect_ratio != 16/9.0:
-                        log_message(f"Invalid aspect ratio for camera: {camera_name}")
-                        all_valid = False
-                        
-            except pm.MayaAttributeError:
-                log_message(f"Attribute error accessing film aperture attributes for camera: {camera_name}")
-                all_valid = False
-                    
+        if not cam_shapes:
+            # No camera shapes found, skip it
+            continue
+
+        cam_shape = cam_shapes[0]
+        camera_name = cam_transform.name()
+
+        # Skip default cameras
+        if camera_name in ['persp', 'top', 'front', 'side']:
+            continue
+
+        try:
+            # Get the aperture attributes
+            film_width = cam_shape.getAttr("horizontalFilmAperture")
+            film_height = cam_shape.getAttr("verticalFilmAperture")
+
+            # Calculate the aspect ratio
+            if film_height != 0:
+                aspect_ratio = film_width / film_height
+
+                # Check if the aspect ratio is within the acceptable ratios
+                if not any(math.isclose(aspect_ratio, ratio, rel_tol=1e-5) for ratio in acceptable_aspect_ratios):
+                    log_message(f"Invalid aspect ratio for camera: {camera_name}")
+                    all_valid = False
+
+        except pm.MayaAttributeError as e:
+            log_message(f"Error accessing aperture attributes for camera '{camera_name}': {e}")
+            all_valid = False
+
     return all_valid
 
 
@@ -313,28 +406,34 @@ def isTransformAndPivotAtOrigin():
 def isLatestVersionOfSetPiece():
     all_valid = True
     
+    # Compile the regex pattern outside of the loop for efficiency
+    version_pattern = re.compile(r'v(\d+)')
+    
     for ref in pm.listReferences():
         file_path = ref.path
         dir_path = os.path.dirname(file_path)
         file_name = os.path.basename(file_path)
         
         # Extract the version number from the file name
-        version_match = re.search(r'v(\d+)', file_name)
+        version_match = version_pattern.search(file_name)
         if version_match:
             current_version = int(version_match.group(1))
+            highest_version = current_version
             
-            # Get all files in the dir
+            # Get all files in the directory
             files_in_directory = os.listdir(dir_path)
             
-            # Check if there's a higher version in the dir
+            # Find the highest version number in the directory
             for other_file in files_in_directory:
-                other_version_match = re.search(r'v(\d+)', other_file)
+                other_version_match = version_pattern.search(other_file)
                 if other_version_match:
                     other_version = int(other_version_match.group(1))
-                    if other_version > current_version:
-                        log_message(f"Outdated reference: {file_name}")
-                        all_valid = False
-                        break  # Break once an outdated reference is found
+                    highest_version = max(highest_version, other_version)
+            
+            # Check if the current version is not the highest
+            if current_version < highest_version:
+                log_message(f"Outdated reference: {file_name} (current: v{current_version}, latest: v{highest_version})")
+                all_valid = False
     
     return all_valid
 
