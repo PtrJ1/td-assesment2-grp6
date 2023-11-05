@@ -6,7 +6,7 @@ import datetime
 
 # 将UI对象设为全局变量
 publish_ui = None
-type = 'transform'
+
 class AssetPublishUI(QtWidgets.QWidget):
     def __init__(self):
         super(AssetPublishUI, self).__init__()
@@ -68,7 +68,12 @@ class AssetPublishUI(QtWidgets.QWidget):
         preview = "Preview:"
         for obj in selected_objects:
             obj_name = os.path.basename(obj)
-            publish_location = os.path.join(location_text, 'publis', 'assets', 'props')
+            object_type = cmds.objectType(obj)
+            # Check if the object is sets or setpieces
+            if object_type == 'objectSet':
+                publish_location = os.path.join(location_text, 'publis', 'assets', 'sets')
+            else:
+                publish_location = os.path.join(location_text, 'publis', 'assets', 'props')
             file_path = self.get_next_version(publish_location, obj_name, current_date)
             preview += f"\n{file_path}"
 
@@ -92,7 +97,13 @@ class AssetPublishUI(QtWidgets.QWidget):
 
         for obj in selected_objects:
             obj_name = os.path.basename(obj)
-            file_path = self.get_next_version(location_text, obj_name, current_date)
+            object_type = cmds.objectType(obj)
+            # Check if the object is sets or setpieces
+            if object_type == 'objectSet':
+                publish_location = os.path.join(location_text, 'publis', 'assets', 'sets')
+            else:
+                publish_location = os.path.join(location_text, 'publis', 'assets', 'props')
+            file_path = self.get_next_version(publish_location, obj_name, current_date)
             
             try:
                 # Determine the file type based on the object type
@@ -101,10 +112,9 @@ class AssetPublishUI(QtWidgets.QWidget):
                 
                 # Check the object type and set the appropriate file type
                 if object_type == 'transform':
-                        file_type = 'mayaBinary'  # Model: setPiece or sets
-                elif object_type == 'cacheFile':
-                    if 'character' in obj_name or 'prop' in obj_name:
-                        file_type = 'cache'  # Animation: character/prop animation cache
+                    file_type = 'mayaBinary'  # Model: setPiece or sets
+                elif object_type == 'objectSet':
+                    file_type = 'mayaBinary'  # Animation: character/prop animation cache
                 
                 if file_type:
                     # Export the object with the appropriate file type
@@ -141,4 +151,3 @@ def show_publish_ui():
 
 if __name__ == '__main__':
     show_publish_ui()
-    
